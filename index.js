@@ -25,36 +25,45 @@ exports.getPreview = function (text, options) {
       fetch(detectedUrl)
         .then(function (response) {
 
-          // get final URL (after any redirects)
-          const finalUrl = response.url;
+         if(response.status !== 200) {
 
-          // get content type of response
-          var contentType = response.headers.get('content-type');
+            throw Error(`Got ${response.status} response`);
 
-          if (!contentType) {
-            return reject({ error: 'React-Native-Link-Preview: Could not extract content type for URL.' });
-          }
-          if (contentType instanceof Array) {
-            contentType = contentType[0];
-          }
+         } else {
 
-          // parse response depending on content type
-          if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
-            resolve(parseImageResponse(finalUrl, contentType));
-          } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
-            resolve(parseAudioResponse(finalUrl, contentType));
-          } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
-            resolve(parseVideoResponse(finalUrl, contentType));
-          } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
-            response.text()
-              .then(function (text) {
-                resolve(parseTextResponse(text, finalUrl, options || {}, contentType));
-              });
-          } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
-            resolve(parseApplicationResponse(finalUrl, contentType));
-          } else {
-            reject({ error: 'React-Native-Link-Preview: Unknown content type for URL.' });
-          }
+           // get final URL (after any redirects)
+           const finalUrl = response.url;
+
+           // get content type of response
+           var contentType = response.headers.get('content-type');
+ 
+           if (!contentType) {
+             return reject({ error: 'React-Native-Link-Preview: Could not extract content type for URL.' });
+           }
+           if (contentType instanceof Array) {
+             contentType = contentType[0];
+           }
+ 
+           // parse response depending on content type
+           if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_IMAGE.test(contentType)) {
+             resolve(parseImageResponse(finalUrl, contentType));
+           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_AUDIO.test(contentType)) {
+             resolve(parseAudioResponse(finalUrl, contentType));
+           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_VIDEO.test(contentType)) {
+             resolve(parseVideoResponse(finalUrl, contentType));
+           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_TEXT.test(contentType)) {
+             response.text()
+               .then(function (text) {
+                 resolve(parseTextResponse(text, finalUrl, options || {}, contentType));
+               });
+           } else if (contentType && CONSTANTS.REGEX_CONTENT_TYPE_APPLICATION.test(contentType)) {
+             resolve(parseApplicationResponse(finalUrl, contentType));
+           } else {
+             reject({ error: 'React-Native-Link-Preview: Unknown content type for URL.' });
+           }
+
+         }
+
         })
         .catch(function (error) { reject({ error: error }) });
     } else {
